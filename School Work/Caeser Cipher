@@ -1,0 +1,22 @@
+code = input("Enter a message\n")
+al = "abcdefghijklmnopqrstuvwxyz"
+key = int(input("Enter a key\n"))
+if key >= 26:
+    tms = key//26
+    key -= 26 * tms
+cae =  al[key:] + al[:key]
+cae = cae.upper()
+let = 0
+code = code.lower()
+rev = int(input("Reverse: 1 or 0\n"))
+if rev == 0:
+    for x in range(26):
+        code = code.replace(al[let], cae[let])
+        let += 1
+if rev == 1:
+    code = code.upper()
+    for x in range(26):
+        code = code.replace(cae[let], al[let])
+        let += 1
+code = code.lower()
+print(code)
