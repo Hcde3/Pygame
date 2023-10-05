@@ -1,0 +1,147 @@
+import turtle
+
+path = "" #making it a string bc easier
+print("Draw any 2d shape")
+moves = int(input("How many moves do you want to make?\n"))
+
+def goright(): 
+    if repeat == 0:
+        if path[0] != path[1]: #this checks if the next direction is the same as the current one
+            turtle.forward(100)
+            turtle.left(45)
+            turtle.forward(100)
+            turtle.backward(100)
+            turtle.right(45)   
+        else:
+            turtle.forward(100)
+    else:
+        turtle.forward(100)
+def goleft(): 
+    if repeat == 0:
+        if path[0] != path[1]:
+            turtle.backward(100)
+            turtle.left(45)
+            turtle.forward(100)
+            turtle.backward(100)
+            turtle.right(45)   
+        else:
+            turtle.backward(100)
+    else:
+        turtle.backward(100)
+def goup(): 
+    if repeat == 0:
+        if path[0] != path[1]:
+            turtle.left(90)
+            turtle.forward(100)
+            turtle.right(90)
+            turtle.left(45)
+            turtle.forward(100)
+            turtle.backward(100)
+            turtle.right(45)   
+        else:
+            turtle.left(90)
+            turtle.forward(100)
+            turtle.right(90)
+    else:
+        turtle.left(90)
+        turtle.forward(100)
+        turtle.right(90)
+def godown(): 
+    if repeat == 0:
+        if path[0] != path[1]:
+            turtle.right(90)
+            turtle.forward(100)
+            turtle.left(90)
+            turtle.left(45)
+            turtle.forward(100)
+            turtle.backward(100)
+            turtle.right(45)   
+        else:
+            turtle.right(90)
+            turtle.forward(100)
+            turtle.left(90)
+    else:
+        turtle.right(90)
+        turtle.forward(100)
+        turtle.left(90)
+path = ""
+repeat = 0 #this is here so it doesnt make a 45 degree line off the projection
+
+while len(path) != moves: 
+    direction = str(input("Pick a direction \n 'up' 'down' 'left' or 'right'\n"))
+    if direction == "right":
+        direction = "r"
+    elif direction == "left":
+        direction = "l"
+    elif direction == "up":
+        direction = "u"
+    else:
+        direction = "d"
+    path = path + direction
+    print (path)
+path = path + "e" #e to signal end of string not a direction
+original_path = path
+
+##unhashtag this if you wanna make something big
+##
+#turtle.pendown()
+#turtle.penup()
+#turtle.right(90)
+#turtle.forward(500)
+#turtle.left(90)
+##
+
+for x in range(0, moves):
+    turtle.pendown()
+    if path[0] == 'l':
+        goleft()
+    if path[0] == 'r':
+        goright()
+    if path[0] == 'u':
+        goup()
+    if path[0] == 'd':
+        godown()
+    if path[0] == 'e':
+        print("Finished")
+    else:
+        path = path[1:]
+repeat = 1
+path = original_path
+
+## between hashtags to reset position
+rights = path.count("r")
+lefts = path.count("l")
+ups = path.count("u")
+downs = path.count("d")
+turtle.penup()
+turtle.backward(100 * rights)
+turtle.forward(100 * lefts)
+turtle.right(90)
+turtle.forward(100 * ups)
+turtle.left(90)
+turtle.right(90)
+turtle.backward(100 * downs)
+turtle.left(90)
+
+
+turtle.pendown()
+turtle.left(45)
+turtle.forward(100)
+turtle.right(45)
+##
+
+for x in range(0, moves):
+    turtle.pendown()
+    if path[0] == 'l':
+        goleft()
+    if path[0] == 'r':
+        goright()
+    if path[0] == 'u':
+        goup()
+    if path[0] == 'd':
+        godown()
+    if path[0] == 'e':
+        print("Finished")
+    else:
+        path = path[1:] #this basically deletes the first letter
+turtle.done()
