@@ -1,0 +1,29 @@
+import time
+numbers = [1,5,10,50,100,500,1000]
+romannumbers = ["I","V","X","L","C","D","M"]
+inp = int(input("Enter a number:\n"))
+num = -1
+out = ""
+ongoing = True
+
+while ongoing == True:
+    denominator = numbers[num]
+    total = str(inp//denominator)
+    rrep = ""
+    for x in range(int(total)):
+        rrep += romannumbers[num]
+    if int(total) == 4:
+        if romannumbers[num] != "M":
+            if romannumbers[num + 1] == out[-1]:
+                out = out[:-1]
+                rrep = romannumbers[num] + romannumbers[num + 2]
+            else:
+                rrep = romannumbers[num] + romannumbers[num + 1]
+    if int(total) > 0:
+        out = out + rrep
+    if numbers[num] == 1:
+        ongoing = False
+    amount = int(total) * numbers[num]
+    inp -= amount
+    num -= 1
+print(out)
