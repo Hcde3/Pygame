@@ -1,0 +1,26 @@
+
+c_fac = -1
+factors = []
+def checkfactors(a):
+    c_num = a
+    for x in range(a):
+        floor = a//c_num
+        div = a/c_num
+        if floor == div:
+            factor = a//c_num
+            fcn = factor
+            f_fact = []
+            print(factor)
+            for x in range(factor):
+                f_floor = factor//fcn
+                f_div = factor/fcn
+                if f_floor == f_div:
+                    f_fact.append(fcn)
+                fcn -= 1
+            if len(f_fact) == 2:
+                print("here")
+                return factor
+        c_num -= 1
+prime = checkfactors(13195)
+print(prime)
+                
