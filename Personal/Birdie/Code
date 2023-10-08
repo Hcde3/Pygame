@@ -1,0 +1,306 @@
+import pygame
+from sys import exit
+import random
+
+play = True
+while play == True:    
+    ##pygame code##
+    pygame.init()
+    screen = pygame.display.set_mode((800,400))
+    pygame.display.set_caption("Birdie")
+    clock = pygame.time.Clock()
+    test_font = pygame.font.Font("Font/the unseen.ttf",50)
+
+    sky_surface = pygame.image.load("Graphics/dSky.png").convert_alpha()
+    ground_surface = pygame.image.load("Graphics/dGround.png").convert_alpha()
+    text_surface = test_font.render("Birdie",True,"Black")
+
+    fox_surf = pygame.image.load("Graphics/Enemies/Foxrun1.png").convert_alpha()
+    fox_rect = fox_surf.get_rect(midbottom = (100,323))
+    
+    fox1_surf = pygame.image.load("Graphics/Enemies/Foxrun1.png").convert_alpha()
+    fox1_rect = fox1_surf.get_rect(midbottom = (100,323))
+    
+    fox2_surf = pygame.image.load("Graphics/Enemies/Foxrun1.png").convert_alpha()
+    fox2_rect = fox2_surf.get_rect(midbottom = (100,323))
+    
+    player_surf = pygame.image.load("Graphics/Player/Bird.png").convert_alpha()
+    player_rect = player_surf.get_rect(midbottom = (10,10))
+
+    death_surf = pygame.image.load("Graphics/DeathScreen.png").convert_alpha()
+    death_rect = player_surf.get_rect(midbottom = (0,0))
+
+    ##variables##
+    foxjumpfreq = 10
+    foxhopheight = 2
+    foxjumpheight = 5
+    p_y_vel = 0
+    p_x_vel = 0
+    f_y_vel = 0
+    f1_y_vel = 0
+    f2_y_vel = 0
+    flaptimer = 0
+    flaps = 0
+    flapinterval = 60
+    foxhop = 0
+    foxtrot = 0
+    fox1hop = 0
+    fox1trot = 0
+    fox2hop = 0
+    fox2trot = 0
+    dead = 0
+    deadanimation = 1
+    stagetimer = 1800
+    stage = 0
+    deathscreentimer = 10
+    deathpos = 800
+    foxspeed = 1
+    waiting = True
+    pycoderun = True
+    while pycoderun == True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                   
+                # checking if key "W" was pressed
+                if event.key == pygame.K_w and not dead == 1:
+                    p_y_vel += 10
+                    flaps += 2
+                    flaptimer += 35
+                   
+                # checking if key "A" was pressed
+                if event.key == pygame.K_a and not dead == 1:
+                    flaps += 1
+                    flaptimer += 17
+                    p_x_vel += 5
+                   
+                # checking if key "S" was pressed
+                if event.key == pygame.K_s and not dead == 1:
+                    flaptimer -= 10
+                    p_y_vel -= 5
+                 
+                # checking if key "D" was pressed
+                if event.key == pygame.K_d and not dead == 1:
+                    flaps += 1
+                    flaptimer += 17
+                    p_x_vel -= 5
+                   
+                    
+        screen.blit(sky_surface,(0,0))
+        screen.blit(ground_surface,(0,323))
+        screen.blit(text_surface,(320,50))
+        screen.blit(fox_surf,fox_rect)
+        screen.blit(player_surf,player_rect)
+        screen.blit(fox1_surf,fox1_rect)
+        screen.blit(fox2_surf,fox2_rect)
+        
+        ##acceleration + air resistance##
+        if p_y_vel > 5:
+            p_y_vel = 5
+        elif p_y_vel < -15:
+            p_y_vel = -15
+        elif deadanimation != -1:
+            p_y_vel -= 0.1
+        
+        if f_y_vel < -10:
+            f_y_vel = -10
+        else:
+            f_y_vel -= 0.1
+        
+        if f1_y_vel < -10:
+            f1_y_vel = -10
+        else:
+            f1_y_vel -= 0.1
+            
+        if f2_y_vel < -10:
+            f2_y_vel = -10
+        else:
+            f2_y_vel -= 0.1
+        
+        if p_x_vel > 20:
+            p_x_vel = 20
+        elif p_x_vel < -20:
+            p_x_vel = -20
+        if p_x_vel >= 0.1:
+            p_x_vel -= 0.1
+        if p_x_vel <= -0.1:
+            p_x_vel += 0.1
+        
+        
+        ##applying velocity to position##
+        player_rect.y -= p_y_vel
+        player_rect.x -= p_x_vel
+        
+        fox_rect.y -= f_y_vel
+        fox_rect.x -= 4*foxspeed
+        if fox_rect.right <= 0:
+            fox_rect.left = 800
+            
+        fox1_rect.y -= f1_y_vel
+        fox1_rect.x -= 8*foxspeed
+        if fox1_rect.right <= 0:
+            fox1_rect.left = 800
+            
+        fox2_rect.y -= f2_y_vel
+        fox2_rect.x -= 6*foxspeed
+        if fox2_rect.right <= 0:
+            fox2_rect.left = 800
+            
+        ##edge bouncing##
+        if player_rect.x <= -100:
+            p_x_vel = -10
+            player_rect.x -= p_x_vel
+        if player_rect.x >= 800:
+            p_x_vel = 10
+            player_rect.x -= p_x_vel
+        if player_rect.y >= 283 and not dead == 1:
+            p_y_vel = 10
+            flaps += 1
+            player_rect.y -= p_y_vel
+        if player_rect.y <= -100:
+            p_y_vel = -2
+            player_rect.y -= p_y_vel
+            
+        if fox_rect.y >= 285:
+            if random.randint(1,int(foxjumpfreq)) == 2:
+                f_y_vel = foxjumpheight
+            else:
+                f_y_vel = foxhopheight
+            fox_rect.y -= f_y_vel
+            if foxtrot == 0:
+               foxhop = 60
+               foxtrot = 30
+        if fox1_rect.y >= 285:
+            if random.randint(1,int(foxjumpfreq)) == 2:
+                f1_y_vel = foxjumpheight
+            else:
+                f1_y_vel = foxhopheight
+            fox1_rect.y -= f1_y_vel
+            if fox1trot == 0:
+               fox1hop = 60
+               fox1trot = 30
+        if fox2_rect.y >= 285:
+            if random.randint(1,int(foxjumpfreq)) == 2:
+                f2_y_vel = foxjumpheight
+            else:
+                f2_y_vel = foxhopheight
+            fox2_rect.y -= f2_y_vel
+            if fox2trot == 0:
+               fox2hop = 60
+               fox2trot = 30
+        ##collision##
+        if player_rect.colliderect(fox_rect):
+            dead = 1
+        if player_rect.colliderect(fox1_rect):
+            dead = 1
+        if player_rect.colliderect(fox2_rect):
+            dead = 1
+        ##cooldowns##
+        if flaptimer > 0:
+            flaptimer -= 6
+        elif flaptimer < 0:
+            flaps -= 1
+            flaptimer = 0
+        ##timers##
+        foxhopheight += 1/3600
+        if stage == 0:
+            foxjumpfreq -= 7/3600
+        foxjumpheight += 3/3600
+        foxspeed += 0.5/3600
+        ##animations##
+        if flaptimer > 0:
+            player_surf = pygame.image.load("Graphics/Player/Bird.png").convert_alpha()
+        else:
+            player_surf = pygame.image.load("Graphics/Player/Birdflap.png").convert_alpha()
+        if flaps > 0 and flaptimer == 0 and flapinterval == 0:
+            flaptimer += 35
+            flapinterval = 60
+        elif flaps > 0 and flaptimer == 0:
+            flapinterval -= 1
+        
+        if foxhop != 0 and foxtrot != 0:
+            fox_surf = pygame.image.load("Graphics/Enemies/Foxrun2.png").convert_alpha()
+            foxhop -= 6
+        elif foxtrot != 0 and foxhop == 0:
+            fox_surf = pygame.image.load("Graphics/Enemies/Foxrun1.png").convert_alpha()
+            foxtrot -= 6
+        
+        if fox1hop != 0 and fox1trot != 0:
+            fox1_surf = pygame.image.load("Graphics/Enemies/Foxrun2.png").convert_alpha()
+            fox1hop -= 6
+        elif fox1trot != 0 and fox1hop == 0:
+            fox1_surf = pygame.image.load("Graphics/Enemies/Foxrun1.png").convert_alpha()
+            fox1trot -= 6
+            
+        if fox2hop != 0 and fox2trot != 0:
+            fox2_surf = pygame.image.load("Graphics/Enemies/Foxrun2.png").convert_alpha()
+            fox1hop -= 6
+        elif fox2trot != 0 and fox2hop == 0:
+            fox2_surf = pygame.image.load("Graphics/Enemies/Foxrun1.png").convert_alpha()
+            fox2trot -= 6
+        
+        if dead == 1:
+            player_surf = pygame.image.load("Graphics/Player/Birddeath.png").convert_alpha()
+            
+        if dead == 1 and deadanimation == 1:
+            deadanimation = 0
+            p_y_vel = 10
+            player_rect.y -= p_y_vel
+        if dead == 1 and player_rect.y >= 283:
+            deadanimation = -1
+            p_y_vel = 0
+            player_surf = pygame.image.load("Graphics/Player/Birddead.png").convert_alpha()
+        if deadanimation == -1:
+            deathscreentimer -= 1
+        if deathscreentimer <= 0:
+            deadanimation = -2
+            screen.blit(death_surf,(0,800))
+            if deathpos != 0:
+                screen.blit(death_surf,(0,deathpos))
+                deathpos -= 5
+                print(deathpos)
+            if deathpos == 0:
+                screen.blit(death_surf,(0,deathpos))
+                pycoderun = False
+        
+        ##Stages##
+        stagetimer -= 1
+        print(stagetimer)
+        if stagetimer == 0:
+            if stage == 0:
+                stagetimer = 1800
+                stage += 1
+                text_surface = test_font.render("They're Getting Wild",True,"Red")
+                foxhopheight = 1
+                foxjumpfreq = 3
+                foxjumpheight = 7
+                foxspeed = 1.5
+            if stage == 1:
+                print("You are done")
+        
+        
+        
+        pygame.display.update()
+        clock.tick(60)
+    while waiting == True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                   
+                # checking if key "Y" was pressed
+                if event.key == pygame.K_y:
+                    waiting = False
+                    play = True
+                # checking if key "N" was pressed
+                if event.key == pygame.K_n:
+                    waiting = False
+                    play = False
+                    pygame.quit()
+                    exit()
+        pygame.display.update()
+        clock.tick(60)
+    #Pickup video by Clear Code at time 32:00
