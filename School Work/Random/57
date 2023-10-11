@@ -1,0 +1,12 @@
+import random
+num = random.randint(1,10)
+wrong = ""
+ans = 0
+while ans != num:
+    print(wrong)
+    ans = int(input("Guess a number from 1 to 10\n"))
+    if ans > num:
+        wrong = "\n\n\n\n\n\n\nToo high"
+    elif ans < num:
+        wrong = "\n\n\n\n\n\n\nToo low"
+print("You got it")
