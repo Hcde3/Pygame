@@ -1,0 +1,19 @@
+import random
+right = 0
+colour = ["Red","Blue","Green","Brown","Purple"]
+colourx = random.choice(colour)
+while right == 0:
+    ans = input("Choose a colour\n")
+    if ans == colourx:
+        right = 1
+    elif colourx == "Red":
+        print("\n\n\n\n\nI bet you're red with anger right now.")
+    elif colourx == "Blue":
+        print("\n\n\n\n\nI bet you're feeling blue right now.")
+    elif colourx == "Green":
+        print("\n\n\n\n\nI bet you're green with envy right now.")
+    elif colourx == "Brown":
+        print("\n\n\n\n\nI bet you're brown in the dumps right now.")
+    elif colourx == "Purple":
+        print("\n\n\n\n\nI bet you're purple.")
+print("\n\n\n\n\n\n\nWell done")
