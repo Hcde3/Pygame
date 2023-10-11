@@ -31,6 +31,7 @@ while play == True:
     death_rect = player_surf.get_rect(midbottom = (0,0))
 
     ##variables##
+    stmbysixty = 30
     foxjumpfreq = 10
     foxhopheight = 2
     foxjumpheight = 5
@@ -50,11 +51,12 @@ while play == True:
     fox2trot = 0
     dead = 0
     deadanimation = 1
-    stagetimer = 1800
+    stagetimer = 3600
     stage = 0
     deathscreentimer = 10
     deathpos = 800
     foxspeed = 1
+    texttime = 120
     waiting = True
     pycoderun = True
     while pycoderun == True:
@@ -149,8 +151,8 @@ while play == True:
             fox2_rect.left = 800
             
         ##edge bouncing##
-        if player_rect.x <= -100:
-            p_x_vel = -10
+        if player_rect.x <= -10:
+            p_x_vel = -5
             player_rect.x -= p_x_vel
         if player_rect.x >= 800:
             p_x_vel = 10
@@ -159,7 +161,7 @@ while play == True:
             p_y_vel = 10
             flaps += 1
             player_rect.y -= p_y_vel
-        if player_rect.y <= -100:
+        if player_rect.y <= -10:
             p_y_vel = -2
             player_rect.y -= p_y_vel
             
@@ -209,6 +211,13 @@ while play == True:
             foxjumpfreq -= 7/3600
         foxjumpheight += 3/3600
         foxspeed += 0.5/3600
+        
+        stagetimer -= 1
+        second = stagetimer//60
+        if texttime > 0:
+            texttime -= 1
+        if stagetimer/60 == second and texttime == 0:
+            text_surface = test_font.render(str(second),True,"Black")
         ##animations##
         if flaptimer > 0:
             player_surf = pygame.image.load("Graphics/Player/Bird.png").convert_alpha()
@@ -266,19 +275,22 @@ while play == True:
                 pycoderun = False
         
         ##Stages##
-        stagetimer -= 1
-        print(stagetimer)
-        if stagetimer == 0:
+        if stagetimer <= 0:
             if stage == 0:
-                stagetimer = 1800
-                stage += 1
+                stagetimer = 1200
                 text_surface = test_font.render("They're Getting Wild",True,"Red")
+                texttime += 120
                 foxhopheight = 1
                 foxjumpfreq = 3
                 foxjumpheight = 7
                 foxspeed = 1.5
-            if stage == 1:
-                print("You are done")
+                stage += 1
+            if stage == 1 and stagetimer <= 0:
+                text_surface = test_font.render("You Win!",True,"Green")
+                stagetimer = 1800
+                texttime += 1200000
+        #else:
+            #print(stagetimer,"-",stage)
         
         
         
