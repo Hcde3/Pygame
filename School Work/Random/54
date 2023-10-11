@@ -1,0 +1,6 @@
+import random
+land = random.choice(["h","t"])
+if input("Heads or Tails? (h or t)\n") == land:
+    print("You win")
+else:
+    print("Bad luck")
