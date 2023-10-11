@@ -1,0 +1,25 @@
+import pygame
+from sys import exit
+
+play = True
+while play == True:
+    ##pygame code##
+    pygame.init()
+    screen = pygame.display.set_mode((1920,1080))
+    pygame.display.set_caption("Gambling")
+    clock = pygame.time.Clock()
+    test_font = pygame.font.Font("Font/the unseen.ttf",50)
+
+    sky_surface = pygame.image.load("Graphics/Gambling.png").convert_alpha()
+    text_surface = test_font.render("Gambling",True,"Red")
+
+    ##variables##
+    pycoderun = True
+    while pycoderun == True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+        screen.blit(sky_surface,(0,0))
+        pygame.display.update()
+        clock.tick(60)
