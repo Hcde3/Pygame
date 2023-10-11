@@ -26,7 +26,7 @@ Syvel = 0
 Gyvel = 0
 Gxvel = 0
 sky_surface = pygame.image.load("Graphics/background.png").convert_alpha()
-ship_surf = pygame.image.load("Graphics/Ship.png").convert_alpha()
+ship_surf = pygame.image.load("Graphics/Sat.png").convert_alpha()
 ship_rect = ship_surf.get_rect(midbottom = (23,23))
 earth_surf = pygame.image.load("Graphics/Earth.png").convert_alpha()
 earth_rect = circle(screen, (0,0,0), 600, 600, 87)
@@ -87,7 +87,7 @@ while play == True:
     ship_rect.x += xa - xuac
     ship_rect.y += ya - yuac
     ##sprites##
-    ship_surf = pygame.image.load("Graphics/Ship.png").convert_alpha()
+    ship_surf = pygame.image.load("Graphics/Sat.png").convert_alpha()
     image = pygame.image.load("Graphics/background.png").convert_alpha()
     sky_surface = pygame.transform.rotate(image, p)
     screen.blit(sky_surface,(0,0))
