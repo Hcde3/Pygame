@@ -1,0 +1,3 @@
+import random
+fruit = ["Oranges","Apples","Bananas","Mangoes","Kiwi"]
+print(random.choice(fruit))
