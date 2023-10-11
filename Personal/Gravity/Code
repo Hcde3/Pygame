@@ -1,0 +1,99 @@
+import pygame
+from sys import exit
+import math
+
+pygame.init()
+screen = pygame.display.set_mode((1200,1200))
+
+class circle:
+    def __init__(self, screen, color, x, y, radius):
+        self.x = x
+        self.y = y
+        self.r = radius
+        pygame.draw.circle(screen, color, (x,y), radius)
+        
+    def collidecircle(self, circle):
+        if math.sqrt(pow(circle.x-self.x, 2) + pow(circle.y-self.y, 2)) < (self.r + circle.radius):
+            return True
+        else:
+            return False
+        
+        
+clock = pygame.time.Clock()
+p = 0
+Sxvel = 0
+Syvel = 0
+Gyvel = 0
+Gxvel = 0
+sky_surface = pygame.image.load("Graphics/background.png").convert_alpha()
+ship_surf = pygame.image.load("Graphics/Ship.png").convert_alpha()
+ship_rect = ship_surf.get_rect(midbottom = (23,23))
+earth_surf = pygame.image.load("Graphics/Earth.png").convert_alpha()
+earth_rect = circle(screen, (0,0,0), 600, 600, 87)
+boost_timer = 500
+ship_rect.x = 800
+ship_rect.y = 200
+da = 0
+yda = 0
+xda = 0
+ua = 0
+yua = 0
+xua = 0
+a = 0
+ya = 0
+xa = 0
+uac = 0
+yuac = 0
+xuac = 0
+play = True
+while play == True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+        if event.type == pygame.KEYDOWN:
+               
+            # checking if key "W" was pressed
+            if event.key == pygame.K_w:
+                yuac += 1
+                
+            # checking if key "A" was pressed
+            if event.key == pygame.K_a:
+                xuac += 1
+               
+            # checking if key "S" was pressed
+            if event.key == pygame.K_s:
+                yuac -= 1
+             
+            # checking if key "D" was pressed
+            if event.key == pygame.K_d:
+                xuac -= 1
+    ##gravity##
+    da += 0.1/(math.sqrt(pow(600-ship_rect.x, 2) + pow(600-ship_rect.y, 2)))
+    yda = (da)/(math.sqrt(pow(600-ship_rect.x, 2) + pow(600-ship_rect.y, 2))) * (600-ship_rect.y)
+    xda = (da)/(math.sqrt(pow(600-ship_rect.x, 2) + pow(600-ship_rect.y, 2))) * (600-ship_rect.x)
+    ua += uac
+    yua = (ua)/(math.sqrt(pow(600-ship_rect.x, 2) + pow(600-ship_rect.y, 2))) * (600-ship_rect.y)
+    xua = (ua)/(math.sqrt(pow(600-ship_rect.x, 2) + pow(600-ship_rect.y, 2))) * (600-ship_rect.x)
+    yua += yuac
+    xua += xuac
+    a = da - ua
+    xa += xda
+    ya += yda
+    if math.sqrt(pow(600-ship_rect.x, 2) + pow(600-ship_rect.y, 2)) <= 87:
+        xa = 0
+        ya = 0
+        print("grounded")
+    ship_rect.x += xa - xuac
+    ship_rect.y += ya - yuac
+    ##sprites##
+    ship_surf = pygame.image.load("Graphics/Ship.png").convert_alpha()
+    image = pygame.image.load("Graphics/background.png").convert_alpha()
+    sky_surface = pygame.transform.rotate(image, p)
+    screen.blit(sky_surface,(0,0))
+    earth_rect = circle(screen, (0,0,0), 600, 600, 87)
+    screen.blit(earth_surf,(513,513))
+    screen.blit(ship_surf,ship_rect)
+    print(ya,"  ",yuac)
+    pygame.display.update()
+    clock.tick(60)
