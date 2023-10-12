@@ -1,0 +1,155 @@
+import pygame
+from pygame import mixer
+from sys import exit
+
+mixer.init()
+mixer.music.load('song.mp3')
+mixer.music.set_volume(0.2)
+mixer.music.play()
+
+def clicked(self, pos):
+    if self.x == pos.x:
+        self = pos
+    
+
+pygame.init()
+screen = pygame.display.set_mode((1000,1000))
+pygame.display.set_caption("PyAlchemy")
+clock = pygame.time.Clock()
+
+test_font = pygame.font.Font("Font/Planet-Joy.ttf",30)
+text = test_font.render("PyAlchemy",True,"Black")
+text2 = test_font.render("Click on an element to identify.",True,"Black")
+background = pygame.image.load("Graphics/Background.png").convert_alpha()
+
+el1box_surf = pygame.image.load("Graphics/Box.png").convert_alpha()
+el1box_rect = el1box_surf.get_rect(midbottom = (700,800))
+
+el2box_surf = pygame.image.load("Graphics/Box.png").convert_alpha()
+el2box_rect = el2box_surf.get_rect(midbottom = (850,800))
+
+el3box_surf = pygame.image.load("Graphics/OutputBox.png").convert_alpha()
+el3box_rect = el3box_surf.get_rect(midbottom = (775,950))
+
+boxpipes_surf = pygame.image.load("Graphics/BoxPipes.png").convert_alpha()
+
+air_s = pygame.image.load("Graphics/Air.png").convert_alpha()
+air = air_s.get_rect(midbottom = (600,500))
+
+brain_s = pygame.image.load("Graphics/Brain.png").convert_alpha()
+brain = brain_s.get_rect(midbottom = (14,0))
+
+cloud_s = pygame.image.load("Graphics/Cloud.png").convert_alpha()
+cloud = cloud_s.get_rect(midbottom = (5,0))
+
+dirt_s = pygame.image.load("Graphics/Dirt.png").convert_alpha()
+dirt = dirt_s.get_rect(midbottom = (8,0))
+
+dust_s = pygame.image.load("Graphics/Dust.png").convert_alpha()
+dust = dust_s.get_rect(midbottom = (7,0))
+
+electricity_s = pygame.image.load("Graphics/Electricity.png").convert_alpha()
+electricity = electricity_s.get_rect(midbottom = (6,0))
+
+energy_s = pygame.image.load("Graphics/Energy.png").convert_alpha()
+energy = energy_s.get_rect(midbottom = (1,0))
+
+fire_s = pygame.image.load("Graphics/Fire.png").convert_alpha()
+fire = fire_s.get_rect(midbottom = (3,0))
+
+gravel_s = pygame.image.load("Graphics/Gravel.png").convert_alpha()
+gravel = gravel_s.get_rect(midbottom = (15,0))
+
+human_s = pygame.image.load("Graphics/Human.png").convert_alpha()
+human = human_s.get_rect(midbottom = (10,0))
+
+life_s = pygame.image.load("Graphics/Life.png").convert_alpha()
+life = life_s.get_rect(midbottom = (13,0))
+
+magma_s = pygame.image.load("Graphics/Magma.png").convert_alpha()
+magma = magma_s.get_rect(midbottom = (9,0))
+
+mud_s = pygame.image.load("Graphics/Mud.png").convert_alpha()
+mud = mud_s.get_rect(midbottom = (12,0))
+
+rock_s = pygame.image.load("Graphics/Rock.png").convert_alpha()
+rock = rock_s.get_rect(midbottom = (400,500))
+
+sand_s = pygame.image.load("Graphics/Sand.png").convert_alpha()
+sand = sand_s.get_rect(midbottom = (11,0))
+
+tempd_s = pygame.image.load("Graphics/TempD.png").convert_alpha()
+tempd = tempd_s.get_rect(midbottom = (500,400))
+
+tempu_s = pygame.image.load("Graphics/TempU.png").convert_alpha()
+tempu = tempu_s.get_rect(midbottom = (500,600))
+
+water_s = pygame.image.load("Graphics/Water.png").convert_alpha()
+water = water_s.get_rect(midbottom = (2,0))
+
+watervapour_s = pygame.image.load("Graphics/WaterVapour.png").convert_alpha()
+watervapour = water_s.get_rect(midbottom = (4,0))
+
+elements = [air,  brain,  cloud,  dirt,  dust,  electricity,  energy,  fire,  gravel,  human,  life,  magma,  mud,  rock,  sand,  tempd,  tempu,  water,  watervapour]
+ele_surf = [air_s,brain_s,cloud_s,dirt_s,dust_s,electricity_s,energy_s,fire_s,gravel_s,human_s,life_s,magma_s,mud_s,rock_s,sand_s,tempd_s,tempu_s,water_s,watervapour_s]
+showing =  [1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0]
+name = ["Air","Brain","Cloud","Dirt","Dust","Electricity","Energy","Fire","Gravel","Human","Life","Magma","Mud","Rock","Sand","Cool Down","Heat Up","Water","Water Vapour"]
+active = None
+ins = 0
+el1 = 0
+el2 = 0
+while True:
+    pri = [air,    air,     air,         air,      air,      cloud,    dirt,    life,      life,   mud,    rock,  rock,   rock,   rock,  tempd,tempu,     water,     water, watervapour]
+    sec = [tempd, tempu,   water,    watervapour, rock,     energy,    water, electricity, brain,  energy,  air,   tempu, tempd,  water, tempu,tempd,     tempu,     dirt,      air]
+    out = [water,  fire, watervapour,   cloud,    dust,   electricity,  mud,   brain,      human,  life,    dirt,  magma, gravel, sand,  energy,energy, watervapour, mud,      cloud]
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                for num, pygame.rect in enumerate(elements):
+                    if pygame.rect.collidepoint(event.pos):
+                        active = num
+                        text2 = test_font.render(name[active],True,"Black")
+        if event.type == pygame.MOUSEMOTION:
+            if active != None:
+                elements[active].move_ip(event.rel)
+        if event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:
+                active = None
+        
+    for num, pygame.rect in enumerate(pri):
+        if pygame.rect.colliderect(el1box_rect):
+            el1 = pri[num]
+            ins += 1
+    for num, pygame.rect in enumerate(sec):
+        if pygame.rect.colliderect(el2box_rect):
+            el2 = sec[num]
+            ins += 1
+    if ins >= 2:
+        for num2, pygame.rect in enumerate(pri):
+            if pri[num2] == el1 and sec[num2] == el2:
+                for num3 in range(len(elements)):
+                    if out[num2] == elements[num3]:
+                        createdphrase = str(name[num3])+" has been Created."
+                        text2 = test_font.render(createdphrase,True,"Black")
+                        if showing[num3] == 0:
+                            showing[num3] = 1
+                            elements[num3].x = 745
+                            elements[num3].y = 847            
+    ins = 0
+    el1 = 0
+    el2 = 0
+    screen.blit(background,(0,0))
+    screen.blit(boxpipes_surf,(625,740))
+    screen.blit(el1box_surf,el1box_rect)
+    screen.blit(el2box_surf,el2box_rect)
+    screen.blit(el3box_surf,el3box_rect)
+    screen.blit(text,(10,10))
+    screen.blit(text2,(500,10))
+    for num, pygame.rect in enumerate(elements):
+        if showing[num] == 1:
+            screen.blit(ele_surf[num],elements[num])
+    pygame.display.update()
+    clock.tick(60)
