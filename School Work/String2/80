@@ -1,0 +1,12 @@
+fn = input("Enter your first name\n")
+print(fn)
+x = len(fn)
+print(x)
+ln = input("Enter your last name\n")
+print(ln)
+x = len(ln)
+print(x)
+name = fn + " " + ln
+print(name)
+x = len(name)
+print(x)
