@@ -1,0 +1,14 @@
+import turtle
+import random
+scr = turtle.Screen()
+colours = ["red","green","blue","black","purple","yellow","orange","white"]
+
+turtle.pendown()
+for x in range(8):
+    y = random.randint(0,7)
+    turtle.color(colours[y],"white")
+    turtle.begin_fill()
+    turtle.forward(100)
+    turtle.left(45)
+turtle.end_fill()
+turtle.exitonclick()
