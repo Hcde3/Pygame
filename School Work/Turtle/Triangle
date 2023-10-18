@@ -1,0 +1,8 @@
+import turtle
+scr = turtle.Screen()
+turtle.pendown()
+for x in range(3):
+    turtle.forward(100)
+    turtle.left(120)
+turtle.penup()
+turtle.exitonclick()
