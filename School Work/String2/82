@@ -1,0 +1,4 @@
+line = "As ever,the nearby hills were a deeper green"
+s = int(input("Start Point\n"))
+e = int(input("End Point\n"))
+print(line[s:e])
