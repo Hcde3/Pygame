@@ -1,0 +1,8 @@
+pc = input("What is your post code?")
+num = "1234567890"
+end = ""
+for x in range(len(pc)):
+    if not pc[x] in num:
+        end = end + pc[x]
+end = end[:2].upper()
+print(end)
