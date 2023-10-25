@@ -1,8 +1,0 @@
-p1 = input("Enter your password:\n")
-p2 = input("Confirm your password:\n")
-if p1 == p2:
-    print("Thank you")
-elif p1.upper() == p2.upper():
-    print("They must be in the same case")
-else:
-    print("Incorrect")

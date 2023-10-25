@@ -1,6 +1,0 @@
-sub = input("What is your favourite subject?\n")
-sub_ = ""
-for x in range(len(sub)):
-    sub_ = sub_ + sub[x] + "-"
-print(sub_)
-    

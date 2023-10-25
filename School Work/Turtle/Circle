@@ -1,8 +1,0 @@
-import turtle
-scr = turtle.Screen()
-turtle.pendown()
-for x in range(360):
-    turtle.forward(1)
-    turtle.left(1)
-turtle.penup()
-turtle.exitonclick()

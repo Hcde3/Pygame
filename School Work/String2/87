@@ -1,3 +1,0 @@
-w = input("Type in a word:\n")
-for x in range(len(w)):
-    print(w[-1-x])

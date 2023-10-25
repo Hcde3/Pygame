@@ -1,6 +1,0 @@
-msg = input("Write a message in upper case\n")
-msg_ = msg.upper()
-while msg != msg_:
-    print("Try again")
-    msg = input("Write a message in upper case\n")
-    msg_ = msg.upper()
