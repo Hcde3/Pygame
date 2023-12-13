@@ -1,0 +1,1 @@
+distance_text = digital_font_small.render(f"{int(dis(p,Goal_star))} U: ({int(abs(p.absX - Goal_star.absX))}  ,  {int(abs(p.absY - Goal_star.absY))})",True,"Yellow")
