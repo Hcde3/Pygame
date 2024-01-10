@@ -1,0 +1,30 @@
+def listify(string):
+    open_bracket_index = 0
+    new_list = []
+    for i,s in enumerate(string):
+        if s == "(":
+            open_bracket_index = i+1
+        if s == ")":
+            variable = string[open_bracket_index:i]
+            if "Furnace" in variable:
+                temp = variable
+                last_comma = 0
+                commas = 0
+                variable = [None,None,None,None,None,None]
+                for i2,v in enumerate(temp):
+                    if v == ",":
+                        variable[commas] = temp[last_comma:i2]
+                        commas += 1
+                        last_comma = i2+1
+                    elif i2 == len(temp) - 1:
+                        variable[commas] = v
+            new_list.append(variable)
+    return new_list
+        
+
+blocks = "AAAFGSSSSB"
+blockdata = "() () () (Furnace,ingot,2,33.3,iron,5) () () () () () ()"
+blockdata = listify(blockdata)
+for i,b in enumerate(blocks):
+    if b == "F":
+        print(blockdata[i])
