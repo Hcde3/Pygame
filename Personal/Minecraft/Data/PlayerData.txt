@@ -1,0 +1,1 @@
+[['Gold Axe', 1, 0], ['Gold Pickaxe', 1, 1], ['Grass', 6, 2], ['Air', 1, 3], ['Wood Axe', 1, 4], ['Iron Pickaxe', 1, 5], ['Leaf', 8, 6], ['Stone', 35, 7], ['Dirt', 8, 8], ['Wood Pickaxe', 1, 9], ['Sticks', 2, 10], ['Wood Planks', 17, 11], ['Air', 1, 12], ['Air', 1, 13], ['Air', 1, 14], ['Air', 1, 15]]
