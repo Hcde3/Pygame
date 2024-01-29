@@ -247,6 +247,7 @@ while True:
                 O.velocity = (O.velocity[0] + (F[0]/O.mass),O.velocity[1] + (F[1]/O.mass))
         O.absX += O.velocity[0]
         O.absY += O.velocity[1]
+        if vectors_showing: pygame.draw.line(void,"Green",O.center,(O.absX + O.velocity[0]*O.mass,O.absY + O.velocity[1]*O.mass),3)
         O.center = (O.absX,O.absY)
     t += 1
     if not t%6:
@@ -254,4 +255,3 @@ while True:
         heights.append(round(objects[0].absY))
     pygame.display.update()
     clock.tick(60)
-    
