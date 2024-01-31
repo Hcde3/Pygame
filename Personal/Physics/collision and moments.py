@@ -19,7 +19,14 @@ class Object(pygame.sprite.Sprite):
         self.angle = 0
         self.angled_surf = surf
         self.mask = pygame.mask.from_surface(self.angled_surf)
-        
+
+class Floor:
+    def __init__(self,height,surf,bounce):
+        self.height = height
+        self.surf = surf
+        self.rect = surf.get_rect(topleft = (0,height))
+        self.bounce = bounce
+
 def window_blit(self):
     self.rect.x = self.absX*(window/window_sz) + (window_sz-window)/2 + center_xdis*(window/window_sz)
     self.rect.y = self.absY*(window/window_sz) + (window_sz-window)/2 + center_ydis*(window/window_sz)
@@ -80,6 +87,9 @@ screen = pygame.display.set_mode((window_sz,window_sz))
 pygame.display.set_caption("Physics Lab")
 clock = pygame.time.Clock()
 square = pygame.image.load("Air.png").convert_alpha()
+ground = pygame.Surface((800,800-700))
+ground.fill("Dark Green")
+floors = [Floor(700,ground,-0.75)]
 objects = [Object(200,200,square.get_rect(center = (200,200)),square,10,(0,0),False),Object(400,400,square.get_rect(center = (400,400)),square,10,(0,0),False)]
 objects[0].angle = 30
 mp = (0,0)
@@ -116,27 +126,60 @@ while True:
         holding.velocity = mp_acc
     for O in objects:
         window_blit(O)
-        forces = []
-        if O == objects[1]: forces.append((0,1,0,25))
+        forces = [(0,0.15*O.mass,0,0)]
         xmoments = 0
         ymoments = 0
+        for F in floors:
+            screen.blit(F.surf,F.rect)
+            if O.rect.colliderect(F.rect):
+                forces.append((O.velocity[0]*O.mass*-0.01,O.velocity[1]*O.mass*F.bounce,0,O.angle))
+                O.absY = F.height - O.surf.get_height()/2
+                O.grounded = True
+                print(forces[-1])
         for F in forces:
             if F[2] != 0:
                 xmoments += (F[2]*F[0])/O.mass
             if F[3] != 0:
                 ymoments += (F[3]*F[1])/O.mass
         O.angle += ymoments
-        #if O.angle > 360: O.angle -= 360
+        #print(O.angle)
+        if O.angle > 360: O.angle -= 360
         O.surf = pygame.transform.rotate(square,O.angle)
         for Oi in objects:
             if O != Oi:
                 other_objects =[]
-                for oo in objects:
-                    if oo != O:
-                        other_objects.append(oo)
-                if pygame.sprite.spritecollide(O, other_objects, False, pygame.sprite.collide_mask):
-                    print(t)
+                for Oi in objects:
+                    if Oi != O:
+                        other_objects.append(Oi)
+                        if pygame.sprite.spritecollide(O, [Oi], False, pygame.sprite.collide_mask):
+                            xf = 0
+                            yf = 0
+                            system_force = (O.mass*O.velocity[0]) + (Oi.mass*Oi.velocity[0])
+                            O.velocity = (0,O.velocity[1])
+                            if Oi.absX < O.absX and abs(Oi.absX - O.absX) > abs(Oi.absY - O.absY):
+                                Oi.absX = O.absX - O.surf.get_width()
+                                O.absX = Oi.absX + Oi.surf.get_width()
+                            elif abs(Oi.absX - O.absX) > abs(Oi.absY - O.absY):
+                                Oi.absX = O.absX + O.surf.get_width()
+                                O.absX = Oi.absX - Oi.surf.get_width()
+                            Oi_original_vel = Oi.velocity
+                            Oi.velocity = ((((3*system_force)/4)/Oi.mass),Oi.velocity[1])
+                            xf = system_force/4  
+                            system_force = (O.mass*O.velocity[1]) + (Oi.mass*Oi.velocity[1])
+                            O.velocity = (O.velocity[0],0)
+                            Oi.velocity = (Oi.velocity[0],(system_force/2)/Oi.mass)
+                            if Oi.absY < O.absY and abs(Oi.absX - O.absX) < abs(Oi.absY - O.absY):
+                                Oi.absY = O.absY - O.surf.get_height()
+                                O.absY = Oi.absY + Oi.surf.get_height()
+                            elif abs(Oi.absX - O.absX) < abs(Oi.absY - O.absY):
+                                Oi.absY = O.absY + O.surf.get_height()
+                                O.absY = Oi.absY - Oi.surf.get_height()
+                            Oi.velocity = (Oi.velocity[0],Oi.velocity[1] + (system_force/4)/Oi.mass)
+            for F in forces:
+                O.velocity = (O.velocity[0] + (F[0]/O.mass),O.velocity[1] + (F[1]/O.mass))
+            O.absX += O.velocity[0]
+            O.absY += O.velocity[1]
+            O.center = (O.absX,O.absY)
     t += 1
     pygame.display.update()
-    clock.tick(6)
-    
+    clock.tick(60)
