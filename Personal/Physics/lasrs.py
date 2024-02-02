@@ -26,6 +26,7 @@ class Laser():
         self.slope = slope
         self.obstruction = (400,400)
         self.rays = [[source,slope,(400,400)]]
+        # [source,(rise,run),past bounce]
         
 def window_blit(self):
     self.rect.x = self.absX*(window/window_sz) + (window_sz-window)/2 + center_xdis*(window/window_sz)
@@ -43,7 +44,7 @@ screen = pygame.display.set_mode((window_sz,window_sz))
 pygame.display.set_caption("Physics Lab")
 clock = pygame.time.Clock()
 square = pygame.image.load("Air.png").convert_alpha()
-objects = [Object(200,200,square.get_rect(center = (200,200)),square,10,(0,0),False),Object(400,400,square.get_rect(center = (400,400)),square,10,(0,0),False)]
+objects = [Object(200,200,square.get_rect(center = (200,200)),square,10,(0,0),False)]
 objects[0].angle = 0
 lasers = [Laser((400,400),(1,-1))]
 mp = (0,0)
@@ -94,20 +95,6 @@ while True:
         O.angle += ymoments
         #if O.angle > 360: O.angle -= 360
         O.surf = pygame.transform.rotate(square,O.angle)
-        for L in lasers:
-            for R in L.rays:
-                reflected = False
-                for u in range(400):
-                    if O.rect.collidepoint((R[0][0] + (R[1][0]*u),R[0][1] + (R[1][1]*u))) and abs(R[2][0]) > abs(R[1][0]*u):
-                        pygame.draw.line(void,"White",(R[0][0],R[0][1]),(R[0][0] + (R[1][0]*u),R[0][1] + (R[1][1]*u)),2)
-                        reflected = (R[0][0] + (R[1][0]*u),R[0][1] + (R[1][1]*u))
-                        R[2] = (R[1][0]*u,R[1][1]*u)
-                        break
-                if reflected:
-                    pygame.draw.line(void,"White",(R[0][0],R[0][1]),reflected,2)
-                    if len(L.rays) < 3: L.rays.append([(R[0][0],R[0][1]),(R[1][0]*-1,R[1][1]),(400,400)])
-                elif R[2] == (400,400):
-                    pygame.draw.line(void,"White",(R[0][0],R[0][1]),(R[0][0] + (R[1][0]*400),R[0][1] + (R[1][1]*400)),2)
         for Oi in objects:
             if O != Oi:
                 other_objects =[]
@@ -116,7 +103,52 @@ while True:
                         other_objects.append(oo)
                 if pygame.sprite.spritecollide(O, other_objects, False, pygame.sprite.collide_mask):
                     print(t)
+    for L in lasers:
+        for i, R in enumerate(L.rays):
+            reflected = False
+            
+            for O in objects:
+                for u in range(400):
+                    if O.rect.collidepoint((R[0][0] + (R[1][0]*u),R[0][1] + (R[1][1]*u))) and (R[0][0] + (R[1][0]*u),R[0][1] + (R[1][1]*u)) != R[0]:
+                        if reflected:
+                            if math.sqrt((reflected[0] - R[0][0])**2 + (reflected[1] - R[0][1])**2) > math.sqrt((R[0][0] + (R[1][0]*u) - R[0][0])**2 + (R[0][1] + (R[1][1]*u) - R[0][1])**2) and math.sqrt(((R[0][0] + 50) - R[0][0])**2 + ((R[0][1] + 50) - R[0][1])**2) < math.sqrt((R[0][0] + (R[1][0]*u) - R[0][0])**2 + (R[0][1] + (R[1][1]*u) - R[0][1])**2):
+                                reflected = (R[0][0] + (R[1][0]*u),R[0][1] + (R[1][1]*u))
+                                if abs(reflected[0] - O.absX) > abs(reflected[1] - O.absY):
+                                    bounce = "top"
+                                else:
+                                    bounce = "side"
+                                R[2] = (R[1][0]*u,R[1][1]*u)
+                        else:
+                            reflected = (R[0][0] + (R[1][0]*u),R[0][1] + (R[1][1]*u))
+                            if abs(reflected[0] - O.absX) > abs(reflected[1] - O.absY):
+                                    bounce = "top"
+                            else:
+                                    bounce = "side"
+            if reflected:
+                try:
+                    L.rays[i+1]
+                    if L.rays[i+1][0] != reflected:
+                        if bounce == "side":
+                            L.rays[i+1] = [(reflected[0],reflected[1]),(R[1][0]*-1,R[1][1]),(400,400)]
+                        if bounce == "top":
+                            L.rays[i+1] = [(reflected[0],reflected[1]),(R[1][0],R[1][1]*-1),(400,400)]
+                except:
+                    if bounce == "side":
+                        L.rays.append([(reflected[0],reflected[1]),(R[1][0]*-1,R[1][1]),(400,400)])
+                    if bounce == "top":
+                        L.rays.append([(reflected[0],reflected[1]),(R[1][0],R[1][1]*-1),(400,400)])
+                pygame.draw.line(void,"Yellow",(R[0][0],R[0][1]),reflected,5)
+            else:
+                pygame.draw.line(void,"Yellow",(R[0][0],R[0][1]),(R[0][0] + (R[1][0]*400),R[0][1] + (R[1][1]*400)),5)
+                new_rays = []
+                for i1, r1 in enumerate(L.rays):
+                    if i1 <= i:
+                        new_rays.append(r1)
+                L.rays = new_rays        
     t += 1
     pygame.display.update()
     clock.tick(60)
+    
+    
+
     
