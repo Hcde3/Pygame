@@ -7,10 +7,22 @@ def window_blit(self):
         new_surface = pygame.transform.scale(self.surf, (self.surf.get_width()*(window/window_sz), self.surf.get_height()*(window/window_sz)))
         new_surface = new_surface.convert_alpha()
         screen.blit(new_surface,(self.absC[0]*(window/window_sz) + (window_sz-window)/2 + center_xdis*(window/window_sz),self.absC[1]*(window/window_sz) + (window_sz-window)/2 + center_ydis*(window/window_sz)))
-    
+
+def window_blit_rect(self):
+    if self.absC[0]*(window/window_sz) + (window_sz-window)/2 + center_xdis*(window/window_sz) -(self.surf.get_width()*(window/window_sz))< window_sz and self.absC[0]*(window/window_sz) + (window_sz-window)/2 + center_xdis*(window/window_sz) + (self.surf.get_width()*2*(window/window_sz)) > 0 and self.absC[1]*(window/window_sz) + (window_sz-window)/2 + center_ydis*(window/window_sz) - (self.surf.get_width()*(window/window_sz)) < window_sz and self.absC[1]*(window/window_sz) + (window_sz-window)/2 + center_ydis*(window/window_sz) + (self.surf.get_width()*2*(window/window_sz))> 0:
+        new_surface = pygame.transform.scale(self.surf, (self.surf.get_width()*(window/window_sz), self.surf.get_height()*(window/window_sz)))
+        new_surface = new_surface.convert_alpha()
+        screen.blit(new_surface,(self.absC[0]*(window/window_sz) + (window_sz-window)/2 + center_xdis*(window/window_sz),self.absC[1]*(window/window_sz) + (window_sz-window)/2 + center_ydis*(window/window_sz)))
+        self.rect = new_surface.get_rect(center = ((self.absC[0]*(window/window_sz) + (window_sz-window)/2 + center_xdis*(window/window_sz),self.absC[1]*(window/window_sz) + (window_sz-window)/2 + center_ydis*(window/window_sz))))
+
 def dis(point1,point2):
     dis = math.sqrt((point1[0]-point2[0])**2 + (point1[1] - point2[1])**2)
     return dis
+
+def pathfind(self,goal,speed):
+    angle = angleturn(self.absC,goal)
+    self.absC = [self.absC[0] + vectorcomponent(angle,(speed)*basespeed,"x"),self.absC[1] + vectorcomponent(angle,(speed)*basespeed,"y")]
+    self.surf = pygame.transform.rotate(man, -angle)
 
 def abswin_convert(point,original,xory):
     if original == "abs":
@@ -57,12 +69,6 @@ def angleturn(point1,point2):
         #print("UpRight")
     return Angle
 
-def wherethefuckdoesthesecomefromimlosingmymind(unit):
-    for x in humans[0].tasks:
-        if x[0] == "Build":
-            if len(x[1].info[0][1]) == 4:
-                print("FUCKING HERE AT UNIT",unit)
-
 class Human:
     def __init__(self,absC,surf,traits):
         self.absC = absC
@@ -71,15 +77,16 @@ class Human:
         self.tasks = [["Idle"]]
         self.idleprocess = [[0,0],[0,0]] #format: [Timer+TimerMode,Movement]
         self.inventory = []
+        self.rect = surf.get_rect(center = (abswin_convert(absC[0],"abs","x"),abswin_convert(absC[1],"abs","y")))
         
 class Tile:
     def __init__(self, absC, surf, layer):
         self.absC = absC
         self.surf = surf
-        self.biome = None
         self.layer = layer
         self.info = []
         self.inventory = []
+        self.rect = surf.get_rect(center = (abswin_convert(absC[0],"abs","x"),abswin_convert(absC[1],"abs","y")))
         
 class Material:
     def __init__(self,absC,surf,name):
@@ -108,16 +115,17 @@ man = pygame.image.load("Human.png").convert_alpha()
 rocks = pygame.image.load("Rocks.png").convert_alpha()
 humans = [Human((100,100),man,[10,10,0,0,5,0,0,0]),Human((100,100),man,[40,40,0,0,1,0,0,0])]
 tiles = []
-materials = [Material((700,700),rocks,"Rocks") ]
+#materials = [Material((700,700),rocks,"Rocks") ]
+materials = []
 blueprint = pygame.image.load("Blueprint.png").convert_alpha()
 stone = pygame.image.load("StoneBlock.png").convert_alpha()
 pb = pygame.image.load("ProgressBar.png").convert_alpha()
 
+basespeed = 2
 center_xchange = 0
 center_ychange = 0
 window_change = 0
 while True:
-    wherethefuckdoesthesecomefromimlosingmymind(10)
     screen.blit(void,(0,0))
     mp = pygame.mouse.get_pos()
     for event in pygame.event.get():
@@ -173,7 +181,7 @@ while True:
     center_ydis += center_ychange
     
     for T in tiles:
-        window_blit(T)
+        window_blit_rect(T)
         if T.surf == blueprint:
             builder = max([x.traits[4] for x in humans if x.traits[4] > 0])
             for x in humans:
@@ -185,8 +193,7 @@ while True:
         if not M.holder: window_blit(M)
     
     for H in humans:
-        wherethefuckdoesthesecomefromimlosingmymind(0)
-        window_blit(H)
+        window_blit_rect(H)
         task_index_start = 0
         for i,t in enumerate(H.tasks):
             if t == ["Idle"]:
@@ -207,14 +214,11 @@ while True:
                         try: t.remove("Gathering")
                         except: pass
                 task_index_start = i+1
-                wherethefuckdoesthesecomefromimlosingmymind(1)
         if H.tasks[task_index_start][0] == "Gather":
             for t in H.tasks:
                 if t[0] == "Build":
-                    if t[1].info[0][1] == H.tasks[task_index_start][1] and not "Gathering" in t:
-                        wherethefuckdoesthesecomefromimlosingmymind(2.1)
+                    if t[1].info[0][1] == H.tasks[task_index_start][1][:len(t[1].info[0][1])] and not "Gathering" in t and len(H.inventory) + len(t[1].info[0][1]) + len(H.tasks[task_index_start][1]) < 8:
                         H.tasks[task_index_start][1].extend(t[1].info[0][1])
-                        wherethefuckdoesthesecomefromimlosingmymind(2)
                         t.append("Gathering")
             target = None
             for m in materials:
@@ -227,17 +231,13 @@ while True:
                 try: H.tasks[task_index_start][0].remove("Impossible")
                 except: pass
                 if dis(H.absC,target.absC) > 70:
-                    angle = angleturn(H.absC,target.absC)
-                    H.absC = [H.absC[0] + vectorcomponent(angle,H.traits[1]/5,"x"),H.absC[1] + vectorcomponent(angle,H.traits[1]/5,"y")]
-                    H.surf = pygame.transform.rotate(man, -angle)
+                    pathfind(H,target.absC,H.traits[1]/5)
                 else:
                     target.holder = H
                     H.inventory.append(target)
                     H.tasks[task_index_start][2].append(target.name)
-                    wherethefuckdoesthesecomefromimlosingmymind(3)
             if H.tasks[task_index_start][1] == H.tasks[task_index_start][2]:
                 H.tasks.remove(H.tasks[task_index_start])
-                wherethefuckdoesthesecomefromimlosingmymind(4)
         elif H.tasks[task_index_start][0] == "Build":
             inv_names = []
             for x in H.inventory:
@@ -247,14 +247,10 @@ while True:
                 if not "Gathering" in H.tasks[task_index_start]:
                     H.tasks[task_index_start].append("Gathering")
                     H.tasks.insert(0,["Gather",list(H.tasks[task_index_start][1].info[0][1]),[]]) #format: [Gather, names of resources needed, resources gathered]
-                    wherethefuckdoesthesecomefromimlosingmymind(5)
             else:
                 if dis(H.absC,H.tasks[task_index_start][1].absC) > 70:
-                    angle = angleturn(H.absC,H.tasks[task_index_start][1].absC)
-                    H.absC = [H.absC[0] + vectorcomponent(angle,H.traits[1]/5,"x"),H.absC[1] + vectorcomponent(angle,H.traits[1]/5,"y")]
-                    H.surf = pygame.transform.rotate(man, -angle)
+                    pathfind(H,H.tasks[task_index_start][1].absC,H.traits[1]/5)
                 else:
-                    wherethefuckdoesthesecomefromimlosingmymind(6)
                     for i in H.tasks[task_index_start][1].info[0][1]:
                         repeat = False
                         for i2 in H.inventory:
@@ -264,11 +260,9 @@ while True:
                                 i2.holder = H.tasks[0][1]
                                 H.tasks[task_index_start][1].inventory.append(i2)
                                 H.tasks[task_index_start][1].info[0][1].remove(i)
-                                wherethefuckdoesthesecomefromimlosingmymind(7)
                     screen.blit(pb,(abswin_convert(H.absC[0],"abs","x"),abswin_convert(H.absC[1],"abs","y")))
                     pb = pygame.transform.scale(pb,(1+((H.tasks[task_index_start][1].info[1][0]/H.tasks[task_index_start][1].info[1][1])*70),10))
-                    H.tasks[task_index_start][1].info[1][0] += H.traits[4]/60
-                    wherethefuckdoesthesecomefromimlosingmymind(8)
+                    H.tasks[task_index_start][1].info[1][0] += (H.traits[4]/60)*basespeed
                     if H.tasks[task_index_start][1].info[1][0] > 20:
                         H.tasks[task_index_start][1].surf = stone
                         H.tasks.remove(H.tasks[task_index_start])
@@ -285,10 +279,9 @@ while True:
                     H.idleprocess[0][0] = 5
                     H.idleprocess[0][1] = 0
             origC = H.absC
-            H.absC = [H.absC[0] + H.idleprocess[1][0],H.absC[1] + H.idleprocess[1][1]]
+            pathfind(H,[H.absC[0] + H.idleprocess[1][0],H.absC[1] + H.idleprocess[1][1]],0.25)
             if H.absC != origC: H.surf = pygame.transform.rotate(man, -angleturn(origC,H.absC))
             H.idleprocess[0][0] -= 1/60
-                
-    wherethefuckdoesthesecomefromimlosingmymind(9)        
+                       
     pygame.display.update()
     clock.tick(60)
