@@ -121,12 +121,26 @@ class Player(pygame.sprite.Sprite):
         self.summonedobjects = []
         self.summoneddecals = []
         self.speedlimit = 8
+        
         if self.element == "Earth":
             self.attackdata.append(["Ungloved",0,6]) #Gloves
             self.attackdata.append(["Unshielded",0,6,1]) #Shield
             self.attackdata.append(["Not Up", 0, 15, True]) #Stack
-            self.attackdata.append(11) #Earthquake
+            self.attackdata.append([11,False]) #Earthquake
             self.elementdata.append("") #Gloved or not gloved sprite
+            self.idle_ac_info = [20,0.05,6] #[untilanimate,rateofanimation,frames]
+            self.stomp_ac = [("Stomp_f1",0.05),("Stomp_f2",0.2),("Stomp_f3",0.05),("Stomp_f4",0.7),("Stomp_f1",0.05)]
+        
+        if self.element == "Dark":
+            self.idle_ac_info = [20000000,1,0] #[untilanimate,rateofanimation,frames]
+            
+        self.animationlock = False
+        self.idle_ac = [("Idle",self.idle_ac_info[0])]
+        self.idle_ac.extend([(f"Idle_s{x+1}",self.idle_ac_info[1]) for x in range(self.idle_ac_info[2])])
+        self.walk_ac = [("Run_f1",0.05),("Run_f2",0.05),("Run_f3",0.05),("Run_f4",0.05),("Run_f5",0.05),("Run_f4",0.05),("Run_f3",0.05),("Run_f2",0.05),("Run_f6",0.05),("Run_f2",0.05),("Run_f3",0.05),("Run_f4",0.05),("Run_f5",0.05),("Run_f4",0.05),("Run_f3",0.05),("Run_f2",0.05),]
+        self.current_step = 0
+        self.current_cycle = self.idle_ac
+        self.animation_timer = 20
         
 class Object(pygame.sprite.Sprite):
     def __init__(self,absC,surf,gravity):
@@ -167,6 +181,15 @@ class Decal(pygame.sprite.Sprite):
         self.absC = absC
         self.surf = surf
         self.cent = (absC[0] + (self.surf.get_width()/2),absC[1] + (self.surf.get_height()/2))
+        
+class Hitbox:
+    def __init__(self,wah,tl):
+        self.tl = tl
+        self.wah = wah
+        self.surf = pygame.Surface(wah)
+        self.surf.fill("Red")
+        self.rect = self.surf.get_rect(topleft = (tl))
+        
   
 pygame.init()
 pygame.joystick.init()
@@ -198,6 +221,7 @@ else:
 players = []
 for x in range(num_joysticks):
     players.append(Player((200,200),"Earth",controllers[x],100))
+players[-1].element = "Dark"
 objects = [Object((100,500),pygame.image.load("Graphics\Platform.png").convert_alpha(),False)]
 sds = createlines([(0,0),(1000,0),(1000,200),(886,238),(815,349),(698,359),(366,400),(101,337),(10,400)])
 objects[-1].sides.extend(sds)
@@ -207,8 +231,11 @@ objects[-1].sl_rgt.extend([slope((1000,0),(1000,200)),slope((1000,200),(886,238)
 objects[-1].sl_lft.extend([slope((366,400),(101,337)),slope((101,337),(10,400))])
 projectiles = []
 decals = []
+visiblehitboxes = []
 
 tick = 0
+tps = 120
+t_fq = tps**-1
 while True:
     screen.blit(void,(0,0))
     mp = pygame.mouse.get_pos()
@@ -269,6 +296,9 @@ while True:
             if not on_object:
                 O.vel = (O.vel[0],O.vel[1] + (9.8/60))
         O.absC = (O.absC[0] + O.vel[0],O.absC[1] + O.vel[1])
+    
+    for vHB in visiblehitboxes:
+        screen.blit(vHB.surf,vHB.rect)
         
     for Pr in projectiles:
         window_blit_rect(Pr)
@@ -290,7 +320,7 @@ while True:
                 Pr.lifetime = -1
                 if Pr.stuntype == "Knock":
                     p.stuninfo = ["Knock",5]
-        Pr.lifetime -= (1/60)
+        Pr.lifetime -= t_fq
         if Pr.lifetime < 0: projectiles.remove(Pr)
         
 #__________________________________________________________________________________________________________________ PLAYERS __________________________________________________________________________________________________________________
@@ -302,26 +332,22 @@ while True:
         on_object = False
         inanimation = False
         
-#----------------------------------- Sprite ----------------------------------------------------------        
-        
-        if P.stuninfo[0]:
-            inanimation = True
-            P.stuninfo[1] -= (1/60)
-            if P.element == "Earth": P.surf = pygame.image.load(f"Graphics\Stickmen\Earth\{P.elementdata[0]}{P.stuninfo[0]}.png").convert_alpha()
-            else: P.surf = pygame.image.load(f"Graphics\Stickmen\{P.element}\{P.stuninfo[0]}.png").convert_alpha()
-            if P.stuninfo[1] < 0: P.stuninfo = [None,0]
-        
+#----------------------------------- Attack Updates ----------------------------------------------------------        
         
         if P.element == "Earth":
+            
+            
             if P.attackdata[0][1] == 0:
                 if P.attackdata[0][0] == "Gloved": P.elementdata[0] = ""
-                P.attackdata[0] = ["Ungloved",0,P.attackdata[0][2] + (1/60)]
+                P.attackdata[0] = ["Ungloved",0,P.attackdata[0][2] + t_fq]
             if P.attackdata[1][1] > 0:
-                P.attackdata[1] = ["Shielded",P.attackdata[1][1] - (1/60),0,P.attackdata[1][3]]
+                P.attackdata[1] = ["Shielded",P.attackdata[1][1] - t_fq,0,P.attackdata[1][3]]
                 inanimation = True
                 x_move = P.attackdata[1][3]
             else:
-                P.attackdata[1] = ["Unshielded",0,P.attackdata[1][2] + (1/60),P.attackdata[1][3]]
+                P.attackdata[1] = ["Unshielded",0,P.attackdata[1][2] + t_fq,P.attackdata[1][3]]
+                
+                
             if P.attackdata[2][0] == "Up":
                 if P.attackdata[2][1] < 0:
                     P.attackdata[2] = ["Not Up",0,0,True]
@@ -339,36 +365,71 @@ while True:
                             p.health -= (200 - dis(p.absC,O.absC))/4
                             stcmp = True
                             p.stuninfo = ["Knock",(200 - dis(p.absC,O.absC))/5]
-                    if stcmp: P.attackdata[2] = ["Up",P.attackdata[2][1] - (1/60),0,True]
-                    else: ["Up",P.attackdata[2][1] - (1/60),0,False]
+                    if stcmp: P.attackdata[2] = ["Up",P.attackdata[2][1] - t_fq,0,True]
+                    else: ["Up",P.attackdata[2][1] - t_fq,0,False]
                 elif P.attackdata[2][1] < 13:
-                    P.attackdata[2] = ["Up",P.attackdata[2][1] - (1/60),0,True]
+                    P.attackdata[2] = ["Up",P.attackdata[2][1] - t_fq,0,True]
                 else:
-                    P.attackdata[2] = ["Up",P.attackdata[2][1] - (1/60),0,False]
+                    P.attackdata[2] = ["Up",P.attackdata[2][1] - t_fq,0,False]
             else:
-                P.attackdata[2] = ["Not Up",0,P.attackdata[2][2] + (1/60),True]
+                P.attackdata[2] = ["Not Up",0,P.attackdata[2][2] + t_fq,True]
                 try:
                     objects.remove(P.summonedobjects[0])
                     P.summonedobjects.remove(P.summonedobjects[0])
                 except: pass
-            if P.attackdata[3] < 1.5:
-                inanimation = True
-                P.attackdata[3] += 1/60
+                
+                
+            if P.attackdata[3][0] > 0.3 and not P.attackdata[3][1] and P.attackdata[3][0] < 1:
+                P.attackdata[3][1] = True
+                P.attackdata[3][0] += t_fq
+                P.animationlock = True
+                decals.append(Decal((P.absC[0] - 75,P.absC[1] + 100),pygame.image.load(f"Graphics\Stickmen\Earth\GroundShatter.png").convert_alpha()))
+                P.summoneddecals.append(decals[-1])
+                P.absC = (P.absC[0] - 20,P.absC[1] - 5)
+                P.vel = (P.vel[0],10)
+                dbhb = pygame.Surface((350,50))
+                h_box = dbhb.get_rect(topleft = (P.absC[0] - 120,P.absC[1] + 69))
+                for ped in players:
+                    if ped.rect.colliderect(h_box) and ped != P:
+                        ped.health -= 60
+                        ped.stuninfo = ["Grounded",7]
+                        ped.absC = (ped.absC[0],ped.absC[1] + 50)
+            elif P.attackdata[3][0] < 1:
+                P.animationlock = True
+                P.attackdata[3][0] += t_fq
             else:
-                if P.attackdata[3] > 8 and P.summoneddecals:
+                if P.attackdata[3][0] > 8 and P.summoneddecals:
                     decals.remove(P.summoneddecals[0])
                     P.summoneddecals.remove(P.summoneddecals[0])
-                P.attackdata[3] += 1/60
-            if not inanimation: 
-                if P.falltimer < 0: P.surf = pygame.image.load(f"Graphics\Stickmen\Earth\{P.elementdata[0]}Falling.png").convert_alpha()
-                else: P.surf = pygame.image.load(f"Graphics\Stickmen\Earth\{P.elementdata[0]}Idle.png").convert_alpha()
-        
-        
+                P.attackdata[3][0] += t_fq
+                P.attackdata[3][1] = False
+                if P.current_cycle == P.stomp_ac:
+                    P.current_cycle = P.idle_ac
+                    P.current_step = 0
+                    P.animation_timer = P.idle_ac[0][1]
+                    P.animationlock = False
+ 
         if P.element == "Dark":
             if not inanimation:
                 if P.falltimer < 0: P.surf = pygame.image.load(f"Graphics\Stickmen\Dark\Falling.png").convert_alpha()
                 else: P.surf = pygame.image.load(f"Graphics\Stickmen\Dark\Idle.png").convert_alpha()
-                
+
+#----------------------------------- Sprite ----------------------------------------------------------
+
+        if P.animation_timer < 0:
+            if P.current_step + 1 < len(P.current_cycle): P.current_step += 1
+            else: P.current_step = 0
+            P.animation_timer = P.current_cycle[P.current_step][1]      
+        P.surf = pygame.image.load(f"Graphics\Stickmen\{P.element}\{P.current_cycle[P.current_step][0]}.png").convert_alpha()
+        P.animation_timer -= t_fq
+        
+        if P.stuninfo[0]:
+            P.animationlock = True
+            P.stuninfo[1] -= t_fq
+            if P.element == "Earth": P.surf = pygame.image.load(f"Graphics\Stickmen\Earth\{P.elementdata[0]}{P.stuninfo[0]}.png").convert_alpha()
+            else: P.surf = pygame.image.load(f"Graphics\Stickmen\{P.element}\{P.stuninfo[0]}.png").convert_alpha()
+            if P.stuninfo[1] < 0: P.stuninfo = [None,0]
+            
         b_s = P.surf
         if P.facingdirection == "L": P.surf = pygame.transform.flip(P.surf,1,0)
         window_blit_rect(P)
@@ -376,7 +437,7 @@ while True:
         
 #----------------------------------- Motion ----------------------------------------------------------
         
-        if (P.controller.get_axis(0) > 0.3 or P.controller.get_axis(0) < -0.3) and not inanimation:
+        if (P.controller.get_axis(0) > 0.3 or P.controller.get_axis(0) < -0.3) and not P.animationlock:
             if (P.vel[0] > -5 and P.controller.get_axis(0) < 0) or (P.vel[0] < 5 and P.controller.get_axis(0) > 0): x_move = 6*P.controller.get_axis(0)
             if P.controller.get_axis(0) < 0:
                 h_dir = -1
@@ -384,8 +445,16 @@ while True:
             else:
                 h_dir = 1
                 P.facingdirection = "R"
+            if P.current_cycle != P.walk_ac:
+                P.current_cycle = P.walk_ac
+                P.current_step = 0
+                P.animation_timer = P.walk_ac[0][1]
         else:
             P.vel = (P.vel[0]*0.9,P.vel[1])
+            if P.vel[0] < 1 and P.current_cycle != P.idle_ac and not P.animationlock:
+                P.current_cycle = P.idle_ac
+                P.current_step = 0
+                P.animation_timer = P.idle_ac[0][1]
         #if controller.get_axis(1) > 0.3 or controller.get_axis(1) < -0.3: y_move = 2*controller.get_axis(1)
         for o in objects:
             if pygame.sprite.spritecollide(P, [o], False, pygame.sprite.collide_mask):
@@ -419,6 +488,8 @@ while True:
                 if closest_line[0][0] in o.sl_up:
                     vy = -abs(vectorcomponent(perpangle,(0.2),"y"))
                 elif closest_line[0][0] in o.sl_dwn:
+                    if "Stack" in o.uniquedata and P.element != "Earth":
+                        P.stuninfo = ["Knock",6]
                     vy = abs(vectorcomponent(perpangle,(5),"y"))
                     
                 if vx > 0:
@@ -434,7 +505,7 @@ while True:
             if P.vel[1] > -5: y_move = -5
         if not on_object:
             P.vel = (P.vel[0],P.vel[1] + (9.8/60))
-            P.falltimer -= 1/60
+            P.falltimer -= t_fq
         P.vel = (P.vel[0] + x_move,P.vel[1] + y_move)
         
 #----------------------------------- Attacks ----------------------------------------------------------
@@ -456,20 +527,12 @@ while True:
                     
                     #Downwards
                     if P.element == "Earth":
-                        if P.attackdata[3] > 10:
-                            decals.append(Decal((P.absC[0] - 75,P.absC[1] + 100),pygame.image.load(f"Graphics\Stickmen\Earth\GroundShatter.png").convert_alpha()))
-                            P.summoneddecals.append(decals[-1])
-                            P.attackdata[3] = 0
-                            P.absC = (P.absC[0] - 20,P.absC[1] - 5)
-                            P.vel = (P.vel[0],10)
-                            P.surf = pygame.image.load(f"Graphics\Stickmen\Earth\{P.elementdata[0]}Stomp.png").convert_alpha()
-                            dbhb = pygame.Surface((300,30))
-                            h_box = dbhb.get_rect(topleft = (P.absC[0] - 120,P.absC[1] + 69))
-                            for ped in players:
-                                if ped.rect.colliderect(h_box) and ped != P:
-                                    ped.health -= 60
-                                    ped.stuninfo = ["Grounded",7]
-                                    ped.absC = (ped.absC[0],ped.absC[1] + 50)
+                        if P.attackdata[3][0] > 10:
+                            P.attackdata[3][0] = 0
+                            P.current_cycle = P.stomp_ac
+                            P.current_step = 0
+                            P.animation_timer = P.stomp_ac[0][1]
+                            P.animationlock = True
                                 
                 else:
                     
@@ -495,7 +558,7 @@ while True:
                 #Stationary
                 
                 if P.element == "Earth":
-                    if P.attackdata[0][0] == "Ungloved" and P.attackdata[0][2] > 5:
+                    if P.attackdata[0][0] == "Ungloved" and P.attackdata[0][2] > 5 and on_object:
                         P.attackdata[0] = ["Gloved",2,0]
                         P.elementdata[0] = "Gloved_"
                         
